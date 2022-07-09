@@ -23,5 +23,45 @@ var (
 // Use the errors defined above as described, again wrapping into fmt.Errorf
 
 func StringSum(input string) (output string, err error) {
-	return "", nil
+	input = strings.NewReplacer(" ", "", "\t", "", "\n", "", "\r", "", "\v", "", "\f", "").Replace(input)
+
+	if input == "" {
+		return "", fmt.Errorf("error: %w", errorEmptyInput)
+	}
+
+	values := strings.Split(input, "+")
+
+	if len(values) == 1 {
+		lastIndex := strings.LastIndex(input, "-")
+
+		switch {
+		case lastIndex <= 0:
+			return "", fmt.Errorf("wrong operands: %w", errorNotTwoOperands)
+		case len(input)-1 == lastIndex:
+			return "", fmt.Errorf("wrong operands: %w", errorNotTwoOperands)
+		default:
+			return calculate(input[:lastIndex], input[lastIndex:])
+		}
+	}
+
+	if len(values) != 2 {
+		return "", fmt.Errorf("wrong operands: %w", errorNotTwoOperands)
+	}
+
+	return calculate(values[0], values[1])
 }
+
+func calculate(value1, value2 string) (string, error) {
+	number1, err1 := strconv.Atoi(value1)
+	if err1 != nil {
+		return "", fmt.Errorf("error in calculation: %w", err1)
+	}
+
+	number2, err2 := strconv.Atoi(value2)
+	if err2 != nil {
+		return "", fmt.Errorf("error in calculation: %w", err2)
+	}
+
+	return strconv.Itoa(number1 + number2), nil
+}
+
